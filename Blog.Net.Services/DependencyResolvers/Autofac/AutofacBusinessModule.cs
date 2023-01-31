@@ -1,0 +1,42 @@
+﻿using Autofac;
+using Blog.Data.Concrete;
+using Blog.Net.Core.Utilities.Security.JWT;
+using Blog.Net.Data.Abstract;
+using Blog.Net.Data.Concrete;
+using Blog.Net.Services.Abstract;
+using Blog.Net.Services.Concrete;
+using Castle.DynamicProxy;
+using Core.Utilities.Interceptors;
+using Autofac.Extras.DynamicProxy;
+
+namespace Blog.Services.DependencyResolvers.Autofac
+{
+    public class AutofacBusinessModule : Module
+    {
+        protected override void Load(ContainerBuilder builder)
+        {
+            builder.RegisterType<CommentDal>().As<ICommentDal>();
+            builder.RegisterType<CommentServices>().As<ICommentServices>();
+
+            builder.RegisterType<PostDal>().As<IPostDal>();
+            builder.RegisterType<PostServices>().As<IPostServices>();
+
+            builder.RegisterType<OperationClaimServices>().As<IOperationClaimServices>();
+            builder.RegisterType<OperationClaimsDal>().As<IOperationClaimsDal>();
+
+            builder.RegisterType<UserService>().As<IUserServices>();
+            builder.RegisterType<UserDal>().As<IUserDal>();
+
+            builder.RegisterType<AuthServices>().As<IAuthServices>();
+            builder.RegisterType<JwtHelper>().As<ITokenHelper>();
+
+            var assembly = System.Reflection.Assembly.GetExecutingAssembly();
+
+            builder.RegisterAssemblyTypes(assembly).AsImplementedInterfaces()
+                .EnableInterfaceInterceptors(new ProxyGenerationOptions()
+                {
+                    Selector = new AspectInterceptorSelector()
+                }).SingleInstance();
+        }
+    }
+}
